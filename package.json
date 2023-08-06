@@ -1,0 +1,24 @@
+{
+  "name": "chatui",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "argon2": "^0.30.3",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "ejs": "~2.6.1",
+    "express": "~4.16.1",
+    "express-mysql-session": "^3.0.0",
+    "express-session": "^1.17.3",
+    "express-session-mysql": "^0.4.3",
+    "http": "^0.0.1-security",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1",
+    "mysql2": "^3.5.2",
+    "socket.io": "^4.7.1"
+  }
+}
