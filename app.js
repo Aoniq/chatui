@@ -12,7 +12,7 @@ let pool = mysql.createPool({
   host: 'localhost',
   user: 'root',
   password: 'Bakugan%10',
-  database: 'chatui',
+  database: 'glrate',
   connectionLimit: 100
 })
 

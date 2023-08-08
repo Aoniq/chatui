@@ -6,7 +6,7 @@ let pool = mysql.createPool({
   host: 'localhost',
   user: 'root',
   password: 'Bakugan%10',
-  database: 'chatui'
+  database: 'glrate'
 })
 
 /* GET users listing. */
@@ -22,21 +22,29 @@ router.get('/logout', function (req, res, next) {
 
 router.post('/register', async (req, res, next) => {
   if (req.body.email
-    && req.body.username
+    && req.body.student_id
     && req.body.password) {
     let email = req.body.email;
-    let username = req.body.username;
+    let username = req.body.student_id;
     let password = req.body.password;
     pool.getConnection(function (err, con) {
-      con.query('SELECT * FROM user WHERE email = ? OR username = ?', [email, username], async (error, rows) => {
+      if (err) {
+        console.log(err)
+      }
+      con.query('SELECT * FROM users WHERE email = ? OR student_id = ?', [email, username], async (error, rows) => {
         console.log(rows.length)
         if (rows.length < 1) {
           const argon2 = require('argon2');
 
           try {
             const hash = await argon2.hash(password);
-            let quer = 'INSERT INTO user (email, username, password) VALUES(?,?,?)'
-            con.query(quer,[email,username,hash])
+            let quer = 'INSERT INTO users (email, student_id, password) VALUES(?,?,?)'
+            try {
+              con.query(quer,[email,username,hash])
+            } catch (error) {
+              console.log(error)
+            }
+            console.log('done')
             res.redirect('/chat')
           } catch (err) {
             console.log(err)
@@ -58,7 +66,7 @@ router.post('/login', async (req,res,next) => {
   if (req.body.email && req.body.password) {
     let email = req.body.email;
     let password = req.body.password;
-    let quer = 'SELECT * FROM user WHERE email = ?'
+    let quer = 'SELECT * FROM users WHERE email = ?'
     pool.getConnection(function (err, con) {
       con.query(quer, [email], async (error, rows) => {
         if (rows.length < 1) {
