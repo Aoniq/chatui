@@ -1,3 +1,26 @@
+    function scrollToBottom() {
+        let messageContainer = document.getElementById('chat-container');
+        if (messageContainer) {
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        }
+    }
+
+    if (document.getElementById('chat-container')) {
+ // Send message to server
+ document.getElementById('send-button').addEventListener('click', function () {
+    let message = document.getElementById('message-input').value;
+    let data = {
+        sender: document.getElementById('senderID').value,
+        senderName: document.getElementById('senderName').value,
+        message: message,
+        receiver: document.getElementById('receiverID').value,
+        receiver_socket_id: document.getElementById('receiverSocketID').value,
+        sender_socket_id: document.getElementById('senderSocketID').value
+    }
+    socket.emit('chat message', data);
+    document.getElementById('message-input').value = '';
+});
+    }
     function fetchContacts() {
         fetch('/api/contacts')
           .then(response => response.json())
@@ -5,23 +28,12 @@
             const contactsList = document.getElementById('contacts-list');
     
             // Clear the current contacts list
-            // contactsList.innerHTML = '';
+            contactsList.innerHTML = '';
     
             // Loop through the contacts and create list items for each contact
             data.forEach(contact => {
-              const listItem = document.createElement('div');
-              listItem.classList.add('row', 'col-10')
-              let profileImage = document.createElement('img');
-              profileImage.classList.add('profile-circle-img');
-              profileImage.src = '/images/' + contact.student_id + '.jpg';
-              let column = document.createElement('div');
-              column.classList.add('col-3');
-              column.appendChild(profileImage);
-              col2 = document.createElement('div');
-              col2.innerHTML = contact.student_id;
-              col2.classList.add('col-9');
-              listItem.appendChild(column);
-              listItem.appendChild(col2);
+              const listItem = document.createElement('li');
+              listItem.innerHTML = `<a href="/chat/${contact.user_id}">${contact.username}</a>`;
               contactsList.appendChild(listItem);
             });
           })
@@ -30,6 +42,26 @@
           });
       }
 
+    // Receive message from server
+    socket.on('chat message', function (msg) {
+        let messageContainer = document.getElementById('chat-container');
+        let messageElement = document.createElement('div');
+        console.log(msg);
+
+        messageElement.classList.add('message');
+
+        if (msg.sender === document.getElementById('senderID').value) {
+            messageElement.classList.add('sender');
+        } else {
+            messageElement.classList.add('receiver');
+        }
+        messageElement.innerHTML = `<strong>${msg.senderName}</strong> ${msg.message}`;
+        messageContainer.appendChild(messageElement);
+        scrollToBottom();
+        fetchContacts();
+        });
+
     window.onload = function () {
         fetchContacts();
+        scrollToBottom();
     };

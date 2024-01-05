@@ -6,14 +6,15 @@ const logger = require('morgan');
 const http = require('http');
 const socketIO = require('socket.io');
 const session = require('express-session');
+// 
+require('dotenv').config()
 const MySQLStore = require('express-mysql-session')(session);
 let mysql = require('mysql2')
 let pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'Bakugan%10',
-  database: 'glrate',
-  connectionLimit: 100
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USERNAME,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE
 })
 
 const indexRouter = require('./routes/index');

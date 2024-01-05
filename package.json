@@ -10,6 +10,7 @@
     "argon2": "^0.30.3",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
+    "dotenv": "^16.3.1",
     "ejs": "~2.6.1",
     "express": "~4.16.1",
     "express-mysql-session": "^3.0.0",

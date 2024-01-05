@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const mysql = require('mysql2');
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'Bakugan%10',
-  database: 'glrate',
-});
+let pool = mysql.createPool({
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USERNAME,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE
+})
+
+// Require socket.io module and initialize the server
+const socketIo = require('socket.io');
 
 module.exports = (io) => {
   // Move the chat rendering logic to a separate function
@@ -17,7 +20,7 @@ module.exports = (io) => {
           console.log(err);
           res.redirect('/auth/login');
         } else {
-          const quer = 'SELECT * FROM users WHERE id = ?';
+          const quer = 'SELECT * FROM user WHERE id = ?';
           con.query(quer, [req.session.userid], (error, row) => {
             if (error) {
               console.log(error);
@@ -25,7 +28,7 @@ module.exports = (io) => {
             } else {
               const receiverName = req.params.user;
               if (receiverName) {
-                let quer = 'SELECT * FROM users WHERE student_id = ?';
+                let quer = 'SELECT * FROM user WHERE id = ?';
                 con.query(quer, [receiverName], (error, rows) => {
                   if (error) {
                     console.log(error);
@@ -34,9 +37,9 @@ module.exports = (io) => {
                     res.send('No user found');
                   } else {
                     quer = `
-                    SELECT m.*, r.student_id as receiver_student_id
+                    SELECT m.*, r.username as receiver_username
                     FROM messages m
-                    JOIN users r ON m.receiver_id = r.id
+                    JOIN user r ON m.receiver_id = r.id
                     WHERE (m.sender_id = ? AND m.receiver_id = ?) OR (m.sender_id = ? AND m.receiver_id = ?)
                     ORDER BY m.sent_at ASC
                   `;
@@ -48,7 +51,7 @@ module.exports = (io) => {
                           console.log(error);
                           res.send('Error fetching messages');
                         } else {
-                          res.render('chats/convo', {
+                          res.render('chat', {
                             receiver: rows[0],
                             user: row[0],
                             messages: results,
@@ -81,13 +84,13 @@ module.exports = (io) => {
           console.log(err);
           res.redirect('/auth/login');
         } else {
-          const quer = 'SELECT * FROM users WHERE id = ?';
+          const quer = 'SELECT * FROM user WHERE id = ?';
           con.query(quer, [req.session.userid], (error, row) => {
             if (error) {
               console.log(error);
               res.redirect('/auth/login');
             } else {
-              res.render('chats/chat');
+              res.render('chat', {user: req.session.userid,receiver: 0});
             }
             // Release the connection after handling the query
             con.release();
@@ -107,13 +110,13 @@ module.exports = (io) => {
         console.log(err);
       } else {
         console.log(socket.request.session.userid)
-        const quer = 'SELECT * FROM users WHERE id = ?';
+        const quer = 'SELECT * FROM user WHERE id = ?';
         con.query(quer, [socket.request.session.userid], (error, row) => {
           if (error) {
             console.log(error);
           } else {
             // add the socket id to the database
-            const quer = 'UPDATE users SET socket_id = ? WHERE id = ?';
+            const quer = 'UPDATE user SET socket_id = ? WHERE id = ?';
             con.query(quer, [socket.id, row[0].id], (error) => {
               if (error) {
                 console.log(error);

@@ -1,12 +1,12 @@
 var express = require('express');
 var router = express.Router();
 let mysql = require('mysql2')
-let argon2 = require('argon2')
+const argon2 = require('argon2');
 let pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'Bakugan%10',
-  database: 'glrate'
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USERNAME,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE
 })
 
 /* GET users listing. */
@@ -22,29 +22,21 @@ router.get('/logout', function (req, res, next) {
 
 router.post('/register', async (req, res, next) => {
   if (req.body.email
-    && req.body.student_id
+    && req.body.username
     && req.body.password) {
     let email = req.body.email;
-    let username = req.body.student_id;
+    let username = req.body.username;
     let password = req.body.password;
     pool.getConnection(function (err, con) {
-      if (err) {
-        console.log(err)
-      }
-      con.query('SELECT * FROM users WHERE email = ? OR student_id = ?', [email, username], async (error, rows) => {
+      con.query('SELECT * FROM user WHERE email = ? OR username = ?', [email, username], async (error, rows) => {
         console.log(rows.length)
         if (rows.length < 1) {
-          const argon2 = require('argon2');
+          
 
           try {
             const hash = await argon2.hash(password);
-            let quer = 'INSERT INTO users (email, student_id, password) VALUES(?,?,?)'
-            try {
-              con.query(quer,[email,username,hash])
-            } catch (error) {
-              console.log(error)
-            }
-            console.log('done')
+            let quer = 'INSERT INTO user (email, username, password) VALUES(?,?,?)'
+            con.query(quer,[email,username,hash])
             res.redirect('/chat')
           } catch (err) {
             console.log(err)
@@ -66,7 +58,7 @@ router.post('/login', async (req,res,next) => {
   if (req.body.email && req.body.password) {
     let email = req.body.email;
     let password = req.body.password;
-    let quer = 'SELECT * FROM users WHERE email = ?'
+    let quer = 'SELECT * FROM user WHERE email = ?'
     pool.getConnection(function (err, con) {
       con.query(quer, [email], async (error, rows) => {
         if (rows.length < 1) {

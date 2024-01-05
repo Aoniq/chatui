@@ -2,20 +2,20 @@ const express = require('express');
 const router = express.Router();
 let mysql = require('mysql2')
 let pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'Bakugan%10',
-  database: 'glrate'
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USERNAME,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE
 })
 
   router.post('/users', (req, res) => {
     if (req.session.userid) {
         if (req.body.username.length !== 0) {
             pool.getConnection(function (err, con) {
-                con.query('SELECT * FROM users WHERE student_id = ?', [req.body.student_id], async (error, rows) => {
+                con.query('SELECT * FROM user WHERE username = ?', [req.body.username], async (error, rows) => {
                     let user = rows[0];
                     if (rows.length < 1) {
-                        res.send('invalid student id')
+                        res.send('invalid username')
                     } else {
                     res.redirect(`/chat/${user.id}`)    
                     }
@@ -38,8 +38,8 @@ let pool = mysql.createPool({
           const userId = req.session.userid; // Store the user ID in a variable
   
           const quer = `
-            SELECT u.id as user_id, u.student_id, m.last_interaction
-            FROM users u
+            SELECT u.id as user_id, u.username, m.last_interaction
+            FROM user u
             JOIN (
               SELECT user_id, MAX(last_interaction) as last_interaction
               FROM (
